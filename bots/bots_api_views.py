@@ -569,7 +569,7 @@ class TranscriptView(APIView):
     @extend_schema(
         operation_id="Get Bot Transcript",
         summary="Get the transcript for a bot",
-        description="If the meeting is still in progress, this returns the transcript so far.",
+        description="If the meeting is still in progress, this returns the transcript so far. For real-time streaming of transcripts as they are created, consider using the WebSocket endpoint at `ws/bots/{bot_id}/transcript/?token=YOUR_API_KEY`.",
         responses={
             200: OpenApiResponse(
                 response=TranscriptUtteranceSerializer(many=True),

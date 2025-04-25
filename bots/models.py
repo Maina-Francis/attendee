@@ -954,6 +954,69 @@ class Utterance(models.Model):
 
     def __str__(self):
         return f"Utterance at {self.timestamp_ms}ms ({self.duration_ms}ms long)"
+        
+    def save(self, *args, **kwargs):
+        is_new_or_updated_transcription = False
+        
+        # Check if this is a new utterance with transcription
+        if self._state.adding and self.transcription and self.transcription.get("transcript", ""):
+            is_new_or_updated_transcription = True
+        
+        # Check if this is an existing utterance with an updated transcription
+        elif not self._state.adding and self.pk:
+            try:
+                old_instance = Utterance.objects.get(pk=self.pk)
+                old_transcript = old_instance.transcription.get("transcript", "") if old_instance.transcription else ""
+                new_transcript = self.transcription.get("transcript", "") if self.transcription else ""
+                
+                if new_transcript and new_transcript != old_transcript:
+                    is_new_or_updated_transcription = True
+            except Utterance.DoesNotExist:
+                pass
+        
+        # Save the instance first
+        super().save(*args, **kwargs)
+        
+        # If transcription is new or updated, broadcast it
+        if is_new_or_updated_transcription and self.recording and self.recording.bot:
+            self.broadcast_transcription()
+    
+    def broadcast_transcription(self):
+        """Broadcast the transcription to connected WebSocket clients."""
+        try:
+            from asgiref.sync import async_to_sync
+            from channels.layers import get_channel_layer
+            from .serializers import TranscriptUtteranceSerializer
+            
+            # Prepare the message data
+            utterance_data = {
+                "speaker_name": self.participant.full_name,
+                "speaker_uuid": self.participant.uuid,
+                "speaker_user_uuid": self.participant.user_uuid,
+                "timestamp_ms": self.timestamp_ms,
+                "duration_ms": self.duration_ms,
+                "transcription": self.transcription,
+            }
+            
+            serialized_data = TranscriptUtteranceSerializer(utterance_data).data
+            
+            # Get the channel layer and send the message
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f"transcript_{self.recording.bot.object_id}",
+                {
+                    "type": "transcript_message",
+                    "message": {
+                        "type": "new_utterance",
+                        "utterance": serialized_data
+                    }
+                }
+            )
+        except Exception as e:
+            # Log the error but don't prevent saving
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error broadcasting transcription: {e}")
 
 
 class Credentials(models.Model):

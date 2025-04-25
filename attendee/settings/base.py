@@ -30,6 +30,8 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "channels",
+    "daphne",
     "django.contrib.staticfiles",
     "django.contrib.sites",
     "allauth",
@@ -113,6 +115,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "attendee.wsgi.application"
+ASGI_APPLICATION = "attendee.asgi.application"
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -204,3 +207,13 @@ STORAGES = {
 AWS_S3_SIGNATURE_VERSION = "s3v4"
 AWS_RECORDING_STORAGE_BUCKET_NAME = os.getenv("AWS_RECORDING_STORAGE_BUCKET_NAME")
 CHARGE_CREDITS_FOR_BOTS = os.getenv("CHARGE_CREDITS_FOR_BOTS", "false") == "true"
+
+# Channel Layers
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [os.getenv("REDIS_URL", "redis://localhost:6379")],
+        },
+    },
+}
