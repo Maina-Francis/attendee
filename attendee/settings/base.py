@@ -25,6 +25,7 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 # Application definition
 INSTALLED_APPS = [
+    "corsheaders",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -82,6 +83,7 @@ STATICFILES_DIRS = [
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -217,3 +219,28 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+# CORS Settings
+# Change these settings for production!
+# Option 1: Allow all origins (easier for development)
+CORS_ALLOW_ALL_ORIGINS = True 
+
+# Option 2: Allow specific origins (better for production)
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000",  # Example: Your local frontend development server
+#     "http://127.0.0.1:3000", # Example: Alternative local address
+#     "https://your-frontend-domain.com", # Example: Your production frontend
+# ]
+
+# Optional: If you need to allow credentials (cookies, auth headers)
+# CORS_ALLOW_CREDENTIALS = True
+
+# Optional: Allow specific headers if needed beyond defaults
+# CORS_ALLOW_HEADERS = list(default_headers) + [
+#     'my-custom-header',
+# ]
+
+# Optional: Allow specific methods if needed beyond defaults
+# CORS_ALLOW_METHODS = list(default_methods) + [
+#     'OPTIONS',
+# ]
