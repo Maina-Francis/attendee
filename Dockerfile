@@ -77,7 +77,7 @@ FROM base AS deps
 
 # Copy only requirements.txt first to leverage Docker cache
 COPY requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install --timeout 600 -r requirements.txt
 
 ENV TINI_VERSION=v0.19.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
