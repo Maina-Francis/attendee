@@ -24,8 +24,9 @@ import bots.routing  # Import routing after Django setup to avoid AppRegistryNot
 application = ProtocolTypeRouter(
     {
         "http": django_asgi_app,
-        "websocket": AllowedHostsOriginValidator(
-            AuthMiddlewareStack(URLRouter(bots.routing.websocket_urlpatterns))
-        ),
+        "websocket": URLRouter(bots.routing.websocket_urlpatterns),
+        # "websocket": AllowedHostsOriginValidator(
+        #     AuthMiddlewareStack(URLRouter(bots.routing.websocket_urlpatterns))
+        # ),
     }
 )

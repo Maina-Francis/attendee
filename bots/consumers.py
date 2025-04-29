@@ -18,24 +18,7 @@ class TranscriptConsumer(AsyncWebsocketConsumer):
         self.bot_id = self.scope["url_route"]["kwargs"]["bot_id"]
         self.transcript_group_name = f"transcript_{self.bot_id}"
         
-        # Get query parameters for authentication
-        query_string = self.scope.get("query_string", b"").decode()
-        query_params = parse_qs(query_string)
-        token_key = query_params.get("token", [None])[0]
-        
-        if not token_key:
-            logger.error(f"No token provided for transcript connection to bot {self.bot_id}")
-            await self.close(code=4003)
-            return
-        
-        # Authenticate using the provided token
-        is_authenticated = await self.authenticate(token_key, self.bot_id)
-        
-        if not is_authenticated:
-            logger.error(f"Authentication failed for transcript connection to bot {self.bot_id}")
-            await self.close(code=4003)
-            return
-        
+        # Authentication disabled for testing
         # Add the connection to the transcript group
         await self.channel_layer.group_add(self.transcript_group_name, self.channel_name)
         
